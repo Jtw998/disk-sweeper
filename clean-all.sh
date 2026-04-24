@@ -8,10 +8,12 @@ echo ""
 echo "The following will be deleted:"
 echo ""
 echo "  1. ~/Library/Caches/*         — user caches"
-echo "  2. ~/Library/Logs/*           — log files"
-echo "  3. /tmp/*                     — temp files"
-echo "  4. ~/.npm/_cacache            — npm cache"
-echo "  5. ~/Library/Caches/pip/*     — pip cache"
+echo "  2. ~/.npm/_cacache            — npm cache"
+echo "  3. ~/Library/Caches/pip/*     — pip cache"
+echo "  4. ~/Library/Caches/Homebrew — Homebrew download cache"
+echo ""
+echo "Skipped: /tmp/* (symlink to /private/tmp on macOS — too dangerous)"
+echo "Skipped: rm -rf ~/Library/Logs/* (may break diagnostic tools)"
 echo ""
 read -p "Type YES to confirm: " confirm
 
@@ -26,10 +28,9 @@ echo ">>> Cleaning..."
 before=$(df -h / | tail -1 | awk '{print $4}')
 
 rm -rf ~/Library/Caches/* 2>/dev/null && echo "[OK] User caches cleaned"
-rm -rf ~/Library/Logs/* 2>/dev/null && echo "[OK] Logs cleaned"
-rm -rf /tmp/* 2>/dev/null && echo "[OK] Temp dir cleaned"
 rm -rf ~/.npm/_cacache 2>/dev/null && echo "[OK] npm cache cleaned"
 rm -rf ~/Library/Caches/pip/* 2>/dev/null && echo "[OK] pip cache cleaned"
+rm -rf ~/Library/Caches/Homebrew/* 2>/dev/null && echo "[OK] Homebrew download cache cleaned"
 
 if command -v conda &>/dev/null; then
     conda clean --all -y 2>/dev/null && echo "[OK] conda cleaned"

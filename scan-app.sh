@@ -1,5 +1,6 @@
 #!/bin/bash
 # disk-sweeper/scan-app.sh — Scan cache for a specific app
+set -euo pipefail
 
 if [[ -z "$1" ]]; then
     echo "Usage: $0 <app> [app2 ...]"

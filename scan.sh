@@ -1,7 +1,7 @@
 #!/bin/bash
 # disk-sweeper/scan.sh — Scan all user-level caches
 
-set -e
+set -euo pipefail
 
 echo "=== User Caches (~/Library/Caches/) ==="
 du -sh ~/Library/Caches/* 2>/dev/null | sort -rh | head -20

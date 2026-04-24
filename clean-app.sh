@@ -1,10 +1,45 @@
 #!/bin/bash
 # disk-sweeper/clean-app.sh — Clean cache for specific app(s)
+set -euo pipefail
 
-if [[ -z "$1" ]]; then
-    echo "Usage: $0 <app> [app2 ...]"
+FORCE=false
+CHECK=false
+APPS=()
+
+for arg in "$@"; do
+    case "$arg" in
+        --force) FORCE=true ;;
+        --check) CHECK=true ;;
+        -h|--help)
+            echo "Usage: $0 [options] <app> [app2 ...]"
+            echo "Options:"
+            echo "  --check    show what would be deleted (dry run)"
+            echo "  --force    skip confirmation prompt"
+            exit 0
+            ;;
+        -*) echo "Unknown option: $arg" >&2; exit 1 ;;
+        *)  APPS+=("$arg") ;;
+    esac
+done
+
+if [[ ${#APPS[@]} -eq 0 ]]; then
+    echo "Usage: $0 [options] <app> [app2 ...]"
     echo "Example: $0 chrome vscode"
     exit 1
+fi
+
+if [[ "$CHECK" == true ]]; then
+    echo "[DRY RUN] Nothing will be deleted."
+    echo ""
+fi
+
+if [[ "$FORCE" != true && "$CHECK" != true ]]; then
+    echo "Cleaning: ${APPS[*]}"
+    read -p "Type YES to confirm: " confirm
+    if [[ "$confirm" != "YES" ]]; then
+        echo "Cancelled."
+        exit 0
+    fi
 fi
 
 cleanup() {
@@ -12,14 +47,18 @@ cleanup() {
     local path="$2"
     if [[ -d "$path" ]]; then
         size=$(du -sh "$path" 2>/dev/null | cut -f1)
-        rm -rf "$path"/*
-        echo "[OK] $label cleaned ($size freed)"
+        if [[ "$CHECK" == true ]]; then
+            echo "[WOULD DELETE] $label ($size at $path)"
+        else
+            rm -rf "$path"/*
+            echo "[OK] $label cleaned ($size freed)"
+        fi
     else
         echo "[--] $label not found or already empty"
     fi
 }
 
-for APP in "$@"; do
+for APP in "${APPS[@]}"; do
     echo ">>> Cleaning: $APP"
 
     case "$APP" in
